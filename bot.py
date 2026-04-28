@@ -102,7 +102,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     user_data[user_id] = {"step": None, "cart": []}
 
-    await update.message.reply_text("Hi !🙋🏻‍♀️/باش نقص عليك مدة الانتظار 😍حطيتلك مساعد شخصي ليك 😲يشوفلك السعر ما عليك غير تبعثي رابط المننتج 😉و يلحقك السعر تلقائي / مرحبا بيك❤️" )
+    await update.message.reply_text("Hi !🙋🏻‍♀️
+    بش نقص عليك مدة الانتظار 😍حطيتلك مساعد شخصي ليك 😲يشوفلك السعر ما عليك غير تبعثي رابط المننتج 😉و يلحقك السعر تلقائي 
+     مرحبا بيك❤️" )
 
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
