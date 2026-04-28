@@ -102,7 +102,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     user_data[user_id] = {"step": None, "cart": []}
 
-    await update.message.reply_text("""👋 مرحبا بيك في Trend Eight 🛍️
+    await update.message.reply_text("""👋 مرحبا بيك في Trend it 🛍️
 
 باش نسهلو عليك الطلب من SHEIN 😍
 حطينا لك مساعد شخصي 🤖
