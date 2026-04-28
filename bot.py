@@ -4,14 +4,14 @@ from telegram.ext import (
     CallbackQueryHandler, ContextTypes, filters
 )
 
-TOKEN = "8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI"
+TOKEN = ("8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI")
 
 EURO = 250
 COMMISSION = 1.15
 FRAIS = 500
 SHIPPING = 2000
 
-ADMIN_ID = None
+ADMIN_ID = 7558872588
 
 PAYMENT_INFO = """
 💳 معلومات الدفع:
