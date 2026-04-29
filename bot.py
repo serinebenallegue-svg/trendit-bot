@@ -13,10 +13,10 @@ from telegram.ext import (
     filters
 )
 
-TOKEN = os.getenv("TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+TOKEN = ("8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI")
+ADMIN_ID = ("7558872588"))
 
-EURO = 250
+EURO = 270
 COMMISSION = 1.15
 FRAIS = 500
 SHIPPING_FRANCE = 2000
@@ -199,7 +199,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "wilaya": None
     }
 
-    await update.message.reply_text("""👋 مرحبا بيك في Trend Eight 🛍️
+    await update.message.reply_text("""👋 مرحبا بيك في Trend it 🛍️
 
 باش نسهلو عليك الطلب من SHEIN 😍
 حطينا لك مساعد شخصي 🤖
