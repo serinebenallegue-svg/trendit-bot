@@ -13,8 +13,8 @@ from telegram.ext import (
     filters
 )
 
-TOKEN = os.getenv("8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+TOKEN = "8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI"
+ADMIN_ID = "7558872588"
 
 EURO = 270
 COMMISSION = 1.15
