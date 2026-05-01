@@ -1,5 +1,6 @@
 import os
 import unicodedata
+import asyncio
 from flask import Flask
 from threading import Thread
 
@@ -13,8 +14,8 @@ from telegram.ext import (
     filters
 )
 
-TOKEN = "8175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI"
-ADMIN_ID = "7558872588"
+TOKEN = os.getenv("175320891:AAFUY9TCDJBZuwFRIAZItgiYcCSCgj70DMI")
+ADMIN_ID = int(os.getenv("7558872588"))
 
 EURO = 270
 COMMISSION = 1.15
@@ -22,74 +23,113 @@ FRAIS = 500
 SHIPPING_FRANCE = 2000
 
 DELIVERY_PRICES = {
-    "setif": 600, "bordj bou arreridj": 700, "alger": 600, "annaba": 700,
-    "batna": 700, "bejaia": 700, "blida": 700, "bouira": 700,
-    "boumerdes": 700, "constantine": 650, "jijel": 700, "khenchela": 800,
-    "medea": 800, "mila": 800, "msila": 700, "oum el bouaghi": 800,
-    "skikda": 800, "tipaza": 700, "tizi ouzou": 700, "el tarf": 850,
-    "guelma": 850, "souk ahras": 850, "tebessa": 850, "ain defla": 800,
-    "chlef": 700, "mostaganem": 800, "oran": 700, "ain temouchent": 800,
-    "mascara": 800, "relizane": 800, "sidi bel abbes": 800, "tissemsilt": 800,
-    "saida": 900, "tiaret": 800, "tlemcen": 800, "biskra": 900,
-    "djelfa": 900, "laghouat": 900, "el oued": 1000, "ghardaia": 1000,
-    "ouargla": 1000, "touggourt": 1000, "bechar": 1200, "beni abbes": 1200,
-    "el bayadh": 1200, "naama": 1200, "adrar": 1500, "timimoun": 1500,
-    "tindouf": 1500, "in salah": 1850, "tamanrasset": 2000, "illizi": 2000
+    "setif": 600,
+    "bordj bou arreridj": 700,
+    "alger": 600,
+    "annaba": 700,
+    "batna": 700,
+    "bejaia": 700,
+    "blida": 700,
+    "bouira": 700,
+    "boumerdes": 700,
+    "constantine": 650,
+    "jijel": 700,
+    "khenchela": 800,
+    "medea": 800,
+    "mila": 800,
+    "msila": 700,
+    "oum el bouaghi": 800,
+    "skikda": 800,
+    "tipaza": 700,
+    "tizi ouzou": 700,
+    "el tarf": 850,
+    "guelma": 850,
+    "souk ahras": 850,
+    "tebessa": 850,
+    "ain defla": 800,
+    "chlef": 700,
+    "mostaganem": 800,
+    "oran": 700,
+    "ain temouchent": 800,
+    "mascara": 800,
+    "relizane": 800,
+    "sidi bel abbes": 800,
+    "tissemsilt": 800,
+    "saida": 900,
+    "tiaret": 800,
+    "tlemcen": 800,
+    "biskra": 900,
+    "djelfa": 900,
+    "laghouat": 900,
+    "el oued": 1000,
+    "ghardaia": 1000,
+    "ouargla": 1000,
+    "touggourt": 1000,
+    "bechar": 1200,
+    "beni abbes": 1200,
+    "el bayadh": 1200,
+    "naama": 1200,
+    "adrar": 1500,
+    "timimoun": 1500,
+    "tindouf": 1500,
+    "in salah": 1850,
+    "tamanrasset": 2000,
+    "illizi": 2000
 }
 
 WILAYA_ALIASES = {
-    "سطيف": "setif", "sétif": "setif",
+    "سطيف": "setif", "sétif": "setif", "setif": "setif",
     "برج بوعريريج": "bordj bou arreridj", "bordj": "bordj bou arreridj",
-    "الجزائر": "alger", "algiers": "alger",
-    "عنابة": "annaba",
-    "باتنة": "batna",
-    "بجاية": "bejaia", "béjaïa": "bejaia",
-    "البليدة": "blida",
-    "البويرة": "bouira",
-    "بومرداس": "boumerdes", "boumerdès": "boumerdes",
-    "قسنطينة": "constantine",
-    "جيجل": "jijel",
-    "خنشلة": "khenchela",
-    "المدية": "medea", "médéa": "medea",
-    "ميلة": "mila",
-    "المسيلة": "msila", "m'sila": "msila",
-    "أم البواقي": "oum el bouaghi", "ام البواقي": "oum el bouaghi",
-    "سكيكدة": "skikda",
-    "تيبازة": "tipaza",
-    "تيزي وزو": "tizi ouzou",
-    "الطارف": "el tarf",
-    "قالمة": "guelma",
-    "سوق أهراس": "souk ahras", "سوق اهراس": "souk ahras",
-    "تبسة": "tebessa", "tébessa": "tebessa",
-    "عين الدفلى": "ain defla",
-    "الشلف": "chlef",
-    "مستغانم": "mostaganem",
-    "وهران": "oran",
-    "عين تموشنت": "ain temouchent",
-    "معسكر": "mascara",
-    "غليزان": "relizane",
-    "سيدي بلعباس": "sidi bel abbes",
-    "تيسمسيلت": "tissemsilt",
-    "سعيدة": "saida",
-    "تيارت": "tiaret",
-    "تلمسان": "tlemcen",
-    "بسكرة": "biskra",
-    "الجلفة": "djelfa",
-    "الأغواط": "laghouat", "الاغواط": "laghouat",
-    "الوادي": "el oued",
-    "غرداية": "ghardaia",
-    "ورقلة": "ouargla",
-    "تقرت": "touggourt",
-    "بشار": "bechar",
-    "بني عباس": "beni abbes",
-    "البيض": "el bayadh",
-    "النعامة": "naama",
-    "أدرار": "adrar", "ادرار": "adrar",
-    "تيميمون": "timimoun",
-    "تندوف": "tindouf",
-    "عين صالح": "in salah",
-    "تمنراست": "tamanrasset",
-    "إليزي": "illizi", "اليزي": "illizi"
+    "الجزائر": "alger", "alger": "alger", "algiers": "alger",
+    "عنابة": "annaba", "annaba": "annaba",
+    "باتنة": "batna", "batna": "batna",
+    "بجاية": "bejaia", "béjaïa": "bejaia", "bejaia": "bejaia",
+    "البليدة": "blida", "blida": "blida",
+    "البويرة": "bouira", "bouira": "bouira",
+    "بومرداس": "boumerdes", "boumerdès": "boumerdes", "boumerdes": "boumerdes",
+    "قسنطينة": "constantine", "constantine": "constantine",
+    "جيجل": "jijel", "jijel": "jijel",
+    "خنشلة": "khenchela", "khenchela": "khenchela",
+    "المدية": "medea", "médéa": "medea", "medea": "medea",
+    "ميلة": "mila", "mila": "mila",
+    "المسيلة": "msila", "m'sila": "msila", "msila": "msila",
+    "أم البواقي": "oum el bouaghi", "ام البواقي": "oum el bouaghi", "oum el bouaghi": "oum el bouaghi",
+    "سكيكدة": "skikda", "skikda": "skikda",
+    "تيبازة": "tipaza", "tipaza": "tipaza",
+    "تيزي وزو": "tizi ouzou", "tizi ouzou": "tizi ouzou",
+    "الطارف": "el tarf", "el tarf": "el tarf",
+    "قالمة": "guelma", "guelma": "guelma",
+    "سوق أهراس": "souk ahras", "سوق اهراس": "souk ahras", "souk ahras": "souk ahras",
+    "تبسة": "tebessa", "tébessa": "tebessa", "tebessa": "tebessa",
+    "عين الدفلى": "ain defla", "ain defla": "ain defla",
+    "الشلف": "chlef", "chlef": "chlef",
+    "مستغانم": "mostaganem", "mostaganem": "mostaganem",
+    "وهران": "oran", "oran": "oran",
+    "عين تموشنت": "ain temouchent", "ain temouchent": "ain temouchent",
+    "معسكر": "mascara", "mascara": "mascara",
+    "غليزان": "relizane", "relizane": "relizane",
+    "سيدي بلعباس": "sidi bel abbes", "sidi bel abbes": "sidi bel abbes",
+    "تيسمسيلت": "tissemsilt", "tissemsilt": "tissemsilt",
+    "سعيدة": "saida", "saida": "saida",
+    "تيارت": "tiaret", "tiaret": "tiaret",
+    "تلمسان": "tlemcen", "tlemcen": "tlemcen",
+    "بسكرة": "biskra", "biskra": "biskra",
+    "الجلفة": "djelfa", "djelfa": "djelfa",
+    "الأغواط": "laghouat", "الاغواط": "laghouat", "laghouat": "laghouat",
+    "الوادي": "el oued", "el oued": "el oued",
+    "غرداية": "ghardaia", "ghardaia": "ghardaia",
+    "ورقلة": "ouargla", "ouargla": "ouargla",
+    "تقرت": "touggourt", "touggourt": "touggourt",
+    "بشار": "bechar", "bechar": "bechar",
+    "بني عباس": "beni abbes", "beni abbes": "beni abbes",
+    "البيض": "el bayadh", "el bayadh": "el bayadh",
+    "النعامة": "naama", "naama": "naama",
+    "أدرار": "adrar", "ادرار": "adrar", "adrar": "adrar",
+    "تيميمون": "timimoun", "timimoun": "timimoun",
+    "تندوف": "tindouf", "tindouf": "tindouf",
+    "عين صالح": "in salah", "in salah": "in salah",
+    "تمنراست": "tamanrasset", "tamanrasset": "tamanrasset",
+    "إليزي": "illizi", "اليزي": "illizi", "illizi": "illizi"
 }
 
 PAYMENT_INFO = """
@@ -143,7 +183,7 @@ def find_wilaya(text):
 
     return None
 
-def calculate_price(price_euro):
+def calculate_shein_price(price_euro):
     if price_euro <= 1.5:
         return 1000
     elif price_euro <= 2.5:
@@ -153,8 +193,8 @@ def calculate_price(price_euro):
     else:
         return int(price_euro * EURO * COMMISSION + FRAIS + SHIPPING_FRANCE)
 
-def products_total(cart):
-    return sum(item["total"] for item in cart)
+def calculate_temu_price(price_euro):
+    return int(price_euro * 270 + 1500)
 
 def cart_text(user_id):
     cart = user_data[user_id]["cart"]
@@ -162,7 +202,8 @@ def cart_text(user_id):
     total_products = 0
 
     for i, item in enumerate(cart, start=1):
-        text += f"{i}. {item['price_euro']}€ → {item['total']} DA\n{item['link']}\n\n"
+        site = item.get("site", "shein").upper()
+        text += f"{i}. {site} | {item['price_euro']}€ → {item['total']} DA\n{item['link']}\n\n"
         total_products += item["total"]
 
     text += f"💰 مجموع المنتجات: {total_products} DA"
@@ -192,6 +233,7 @@ def cart_buttons(cart):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
+
     user_data[user_id] = {
         "step": None,
         "cart": [],
@@ -201,16 +243,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("""👋 مرحبا بيك في Trend it 🛍️
 
-باش نسهلو عليك الطلب من SHEIN 😍
+باش نسهلو عليك الطلب من SHEIN و TEMU 😍
 حطينا لك مساعد شخصي 🤖
 
 💰 يعطيك السعر مباشرة بالدينار
 📦 يحسبلك الطلبية كاملة
 🚚 يحسبلك التوصيل للمنزل حسب الولاية
 
-📎 ابعتي رابط المنتج من SHEIN للبدء
+📎 ابعتي رابط المنتج من SHEIN أو TEMU للبدء
 💶 ومن بعد ابعتي السعر بالأورو
 """)
+
+async def remind_admin_later(context, user_id):
+    await asyncio.sleep(600)  # 10 دقائق
+
+    if user_id in user_data and user_data[user_id].get("step") == "waiting_receipt":
+        client_info = user_data[user_id].get("client_info", "لم تُرسل المعلومات.")
+
+        await context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=(
+                "⏳ طلبية قيد التأكيد\n\n"
+                "الزبونة وصلها المجموع ومعلومات الدفع، لكنها لم ترسل وصل الدفع بعد 10 دقائق.\n\n"
+                f"📋 معلومات الزبونة:\n{client_info}\n\n"
+                f"{cart_text(user_id)}"
+            )
+        )
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
@@ -224,8 +282,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "wilaya": None
         }
 
-    if "shein" in text.lower():
+    if "shein" in text.lower() or "temu" in text.lower():
         user_data[user_id]["current_link"] = text
+        user_data[user_id]["site"] = "temu" if "temu" in text.lower() else "shein"
         user_data[user_id]["step"] = "waiting_price"
 
         await update.message.reply_text(
@@ -238,12 +297,18 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_data[user_id].get("step") == "waiting_price":
         try:
             price_euro = float(text.replace(",", "."))
-            total = calculate_price(price_euro)
+            site = user_data[user_id].get("site", "shein")
+
+            if site == "temu":
+                total = calculate_temu_price(price_euro)
+            else:
+                total = calculate_shein_price(price_euro)
 
             product = {
                 "link": user_data[user_id].get("current_link", ""),
                 "price_euro": price_euro,
-                "total": total
+                "total": total,
+                "site": site
             }
 
             user_data[user_id]["cart"].append(product)
@@ -280,6 +345,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if wilaya is None:
             user_data[user_id]["step"] = "waiting_wilaya"
+
             await update.message.reply_text(
                 "ما قدرتش نعرف الولاية من المعلومات.\n"
                 "من فضلك اكتبي الولاية فقط، بالعربية أو الفرنسية.\n\n"
@@ -292,8 +358,12 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data[user_id]["step"] = "waiting_receipt"
 
         await update.message.reply_text(
-            cart_text(user_id) + "\n\n" + PAYMENT_INFO
+            "✅ تم استلام معلوماتك.\n\n"
+            "📌 الرجاء التأكد جيدًا من رقم الهاتف قبل إرسال وصل الدفع.\n\n"
+            + cart_text(user_id) + "\n\n" + PAYMENT_INFO
         )
+
+        asyncio.create_task(remind_admin_later(context, user_id))
         return
 
     if user_data[user_id].get("step") == "waiting_wilaya":
@@ -311,11 +381,15 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data[user_id]["step"] = "waiting_receipt"
 
         await update.message.reply_text(
-            cart_text(user_id) + "\n\n" + PAYMENT_INFO
+            "✅ تم استلام الولاية.\n\n"
+            "📌 الرجاء التأكد جيدًا من رقم الهاتف قبل إرسال وصل الدفع.\n\n"
+            + cart_text(user_id) + "\n\n" + PAYMENT_INFO
         )
+
+        asyncio.create_task(remind_admin_later(context, user_id))
         return
 
-    await update.message.reply_text("أرسلي رابط منتج Shein أولًا 🛍️")
+    await update.message.reply_text("أرسلي رابط منتج Shein أو Temu أولًا 🛍️")
 
 async def show_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
@@ -352,11 +426,23 @@ async def handle_receipt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=ADMIN_ID, text=order_summary)
 
     if update.message.photo:
-        await context.bot.send_photo(chat_id=ADMIN_ID, photo=update.message.photo[-1].file_id, caption="🧾 وصل الدفع")
+        await context.bot.send_photo(
+            chat_id=ADMIN_ID,
+            photo=update.message.photo[-1].file_id,
+            caption="🧾 وصل الدفع"
+        )
     elif update.message.video:
-        await context.bot.send_video(chat_id=ADMIN_ID, video=update.message.video.file_id, caption="🧾 وصل الدفع")
+        await context.bot.send_video(
+            chat_id=ADMIN_ID,
+            video=update.message.video.file_id,
+            caption="🧾 وصل الدفع"
+        )
     elif update.message.document:
-        await context.bot.send_document(chat_id=ADMIN_ID, document=update.message.document.file_id, caption="🧾 وصل الدفع")
+        await context.bot.send_document(
+            chat_id=ADMIN_ID,
+            document=update.message.document.file_id,
+            caption="🧾 وصل الدفع"
+        )
 
     await update.message.reply_text(
         "✅ تم إرسال طلبك للتأكيد.\n"
@@ -396,7 +482,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if len(cart) == 0:
             await query.message.reply_text("السلة فارغة.")
         else:
-            await query.message.reply_text(cart_text(user_id), reply_markup=cart_buttons(cart))
+            await query.message.reply_text(
+                cart_text(user_id),
+                reply_markup=cart_buttons(cart)
+            )
 
     elif data == "confirm_order":
         if len(cart) == 0:
@@ -417,7 +506,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "add_more":
-        await query.message.reply_text("أرسلي رابط منتج Shein جديد.")
+        await query.message.reply_text("أرسلي رابط منتج Shein أو Temu جديد.")
 
     elif data == "cancel_order":
         user_data[user_id] = {
@@ -426,6 +515,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "delivery_price": None,
             "wilaya": None
         }
+
         await query.message.reply_text("❌ تم إلغاء الطلبية.")
 
 def main():
