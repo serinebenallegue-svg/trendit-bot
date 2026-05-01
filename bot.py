@@ -171,14 +171,16 @@ def normalize(text):
     return text
 
 def find_wilaya(text):
-    clean = normalize(text)
+    clean = text.lower().strip()
 
+    # direct match
     for name in DELIVERY_PRICES:
         if name in clean:
             return name
 
+    # aliases
     for alias, canonical in WILAYA_ALIASES.items():
-        if normalize(alias) in clean:
+        if alias.lower() in clean:
             return canonical
 
     return None
